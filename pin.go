@@ -43,6 +43,15 @@ func iniciarMonitoramento() {
 
 	site := "https://random-status-code.herokuapp.com/"
 
+	//Slice - Abstração do Array com tamanho fixo
+	sites := []string{
+		"https://random-status-code.herokuapp.com/",
+		"https://google.com/",
+		"https://caelum.com.br",
+		"https://nanoshots.com.br"}
+
+	fmt.Println(sites)
+
 	resp, _ := http.Get(site)
 
 	if resp.StatusCode == 200 {
