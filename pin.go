@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
-import "os"
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
 
 func main() {
 
@@ -13,6 +16,10 @@ func main() {
 
 	case 1:
 		fmt.Println("Monitorando")
+		for {
+			iniciarMonitoramento()
+		}
+
 		break
 
 	case 2:
@@ -32,15 +39,33 @@ func main() {
 
 }
 
+func iniciarMonitoramento() {
+
+	site := "https://random-status-code.herokuapp.com/"
+
+	resp, _ := http.Get(site)
+
+	if resp.StatusCode == 200 {
+		fmt.Println("Site:", site, "está funcionando normalmente", "- Status:", resp.StatusCode)
+	} else {
+		fmt.Println("Site:", site, "Não está respondendo", "- Status:", resp.StatusCode)
+	}
+
+}
+
 func exibeMenu() {
+
 	fmt.Println("1 - Iniciar monitoramento")
 	fmt.Println("2 - Exibir Logs")
 	fmt.Println("3 - Sair do Programa")
+
 }
 
 func leComando() int {
+
 	var comandoLido int
 	fmt.Scan(&comandoLido)
 
 	return comandoLido
+
 }
