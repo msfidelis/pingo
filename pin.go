@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -16,9 +20,7 @@ func main() {
 
 	case 1:
 		fmt.Println("Monitorando")
-		for {
-			iniciarMonitoramento()
-		}
+		iniciarMonitoramento()
 
 		break
 
@@ -39,29 +41,40 @@ func main() {
 
 }
 
+//Inicia o monitoramento dos sites alvo
 func iniciarMonitoramento() {
+	sites := leSitesDoArquivo()
+	//Looping infinito com for
+	for {
 
-	site := "https://random-status-code.herokuapp.com/"
+		for _, site := range sites { //For range
+			testaSite(site)
+		}
 
-	//Slice - Abstração do Array com tamanho fixo
-	sites := []string{
-		"https://random-status-code.herokuapp.com/",
-		"https://google.com/",
-		"https://caelum.com.br",
-		"https://nanoshots.com.br"}
+		time.Sleep(5 * time.Second)
+	}
 
-	fmt.Println(sites)
+}
 
-	resp, _ := http.Get(site)
+//Faz um request HTTP para o site alvo e mostra o resultado
+func testaSite(site string) {
+
+	//Request simples
+	resp, err := http.Get(site)
+
+	//Tratamento de erro nos requests
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "está funcionando normalmente", "- Status:", resp.StatusCode)
 	} else {
 		fmt.Println("Site:", site, "Não está respondendo", "- Status:", resp.StatusCode)
 	}
-
 }
 
+//Mostra as opções do Menu
 func exibeMenu() {
 
 	fmt.Println("1 - Iniciar monitoramento")
@@ -70,6 +83,7 @@ func exibeMenu() {
 
 }
 
+//Lê um input do teclado
 func leComando() int {
 
 	var comandoLido int
@@ -77,4 +91,37 @@ func leComando() int {
 
 	return comandoLido
 
+}
+
+//Retorna um slice de sites lidos de dentro de um arquivo
+func leSitesDoArquivo() []string {
+
+	var sites []string
+
+	arquivo, err := os.Open("sites.txt")
+
+	//Exemplo de tratamento de erro
+	if err != nil {
+		fmt.Println("Erro ao abrir o arquivo: ", err)
+	}
+
+	//Leitura de arquivos
+	leitor := bufio.NewReader(arquivo)
+
+	//Lendo todas as linhas de um arquivo
+	for {
+
+		linha, err := leitor.ReadString('\n')
+		linha = strings.TrimSpace(linha)
+
+		sites = append(sites, linha)
+
+		if err == io.EOF {
+			break
+		}
+
+	}
+
+	arquivo.Close()
+	return sites
 }
