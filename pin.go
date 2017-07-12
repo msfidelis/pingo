@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,11 +22,11 @@ func main() {
 	case 1:
 		fmt.Println("Monitorando")
 		iniciarMonitoramento()
-
 		break
 
 	case 2:
 		fmt.Println("Exibindo Logs")
+		imprimeLogs()
 		break
 
 	case 3:
@@ -69,8 +70,10 @@ func testaSite(site string) {
 
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "está funcionando normalmente", "- Status:", resp.StatusCode)
+		registraLog(site, resp.StatusCode, true)
 	} else {
 		fmt.Println("Site:", site, "Não está respondendo", "- Status:", resp.StatusCode)
+		registraLog(site, resp.StatusCode, false)
 	}
 }
 
@@ -124,4 +127,52 @@ func leSitesDoArquivo() []string {
 
 	arquivo.Close()
 	return sites
+}
+
+//Registra o log
+//Formato de datas no Go: https://golang.org/src/time/format.go
+//Anotando aqui pq achei uma bosta e não vou decorar tão fácil
+func registraLog(site string, StatusCode int, online bool) {
+
+	logfile, err := os.OpenFile("pingo.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	if err != nil {
+		fmt.Println("Erro: ", err)
+	} else {
+
+		logfile.WriteString(time.Now().Format("02/01/2016 15:04:05") + " - " + site + " Online: " + strconv.FormatBool(online) + "\n")
+
+	}
+
+	logfile.Close()
+
+}
+
+//Imprime o arquivo de logs
+func imprimeLogs() {
+
+	arquivo, err := os.Open("pingo.log")
+
+	if err != nil {
+		fmt.Println("Erro ao abrir o arquivo: ", err)
+	}
+
+	leitor := bufio.NewReader(arquivo)
+
+	for {
+
+		linha, err := leitor.ReadString('\n')
+		linha = strings.TrimSpace(linha)
+
+		fmt.Println(linha)
+
+		if err == io.EOF {
+			break
+		}
+
+	}
+
+	arquivo.Close()
+
+	main()
 }
